@@ -19,7 +19,7 @@ class CycleGanmodel(BaseModel):
             parser.add_argument('--lambda_B', type=float, default=1.0,
                                 help='weight for cycle loss (B -> A -> B)')
             parser.add_argument('--lambda_identity', type=float, default=0.1, help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
-            parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks_depth',
+            parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
                                 help='selects model to use for netG_A')
             parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
                                 help='selects model to use for netG_B')
@@ -31,8 +31,10 @@ class CycleGanmodel(BaseModel):
         # specify the training losses you want to print out. The program will call base_model.get_current_losses
         self.loss_names = ['D_A', 'G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B']
         # specify the images you want to save/display. The program will call base_model.get_current_visuals
-        visual_names_A = ['real_A', 'depth', 'fake_B', 'rec_A']
-        visual_names_B = ['real_B', 'real_B_depth', 'fake_A', 'rec_B']
+        #visual_names_A = ['real_A', 'depth', 'fake_B', 'rec_A']
+        visual_names_A = ['real_A', 'fake_B', 'rec_A']
+        #visual_names_B = ['real_B', 'real_B_depth', 'fake_A', 'rec_B']
+        visual_names_B = ['real_B', 'fake_A', 'rec_B']
         if self.isTrain and self.opt.lambda_identity > 0.0:
             visual_names_A.append('idt_A')
             visual_names_B.append('idt_B')
@@ -82,17 +84,19 @@ class CycleGanmodel(BaseModel):
     def set_input(self, input):
         AtoB = self.opt.which_direction == 'AtoB'
         self.real_A = input['A' if AtoB else 'C'].to(self.device)
-        self.depth =  input['D'].to(self.device)
+        #self.depth =  input['D'].to(self.device)
         self.real_B = input['C' if AtoB else 'A'].to(self.device)
-        self.real_B_depth = input['E'].to(self.device)
+        #self.real_B_depth = input['E'].to(self.device)
         self.image_paths = input['A_paths' if AtoB else 'C_paths']
 
     def forward(self):
-        self.fake_B = self.netG_A(self.real_A, self.depth, True)
+        #self.fake_B = self.netG_A(self.real_A, self.depth, True)
+        self.fake_B = self.netG_A(self.real_A)
+
         self.rec_A = self.netG_B(self.fake_B)
 
         self.fake_A = self.netG_B(self.real_B)
-        self.rec_B = self.netG_A(self.fake_A, self.real_B_depth, True)
+        self.rec_B = self.netG_A(self.fake_A)
 
     def backward_D_basic(self, netD, real, fake):
         # Real
@@ -122,7 +126,7 @@ class CycleGanmodel(BaseModel):
         # Identity loss
         if lambda_idt >= 0:
             # G_A should be identity if real_B is fed.
-            self.idt_A = self.netG_A(self.real_B, self.real_B_depth, True)
+            self.idt_A = self.netG_A(self.real_B)
             self.loss_idt_A = self.criterionIdt(self.idt_A, self.real_B) * lambda_B * lambda_idt
             # G_B should be identity if real_A is fed.
             self.idt_B = self.netG_B(self.real_A)
