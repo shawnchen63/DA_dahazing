@@ -45,7 +45,7 @@ class DAnetmodel(BaseModel):
 			parser.add_argument('--lambda_identity', type=float, default=30.0,
 								help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
 
-			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks_depth',
+			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_A')
 			parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_B')
@@ -192,8 +192,8 @@ class DAnetmodel(BaseModel):
 			self.syn_haze_img = input_A.to(self.device)
 			self.real_haze_img = input_C.to(self.device)
 			self.clear_img = input_B.to(self.device)
-			self.depth = input['D'].to(self.device)
-			self.real_depth = input['E'].to(self.device)
+			#self.depth = input['D'].to(self.device)
+			#self.real_depth = input['E'].to(self.device)
 			self.image_paths = input['A_paths' if AtoB else 'B_paths']
 		else:
 			self.img = input['A'].to(self.device)
@@ -262,9 +262,9 @@ class DAnetmodel(BaseModel):
 		lambda_R = self.opt.lambda_R
 
 		# =========================== synthetic ==========================
-		self.img_s2r = self.netS2R(self.syn_haze_img, self.depth, True)
-		self.idt_S = self.netR2S(self.syn_haze_img, self.depth, True)
-		self.s_rec_img = self.netR2S(self.img_s2r, self.depth, True)
+		self.img_s2r = self.netS2R(self.syn_haze_img)
+		self.idt_S = self.netR2S(self.syn_haze_img)
+		self.s_rec_img = self.netR2S(self.img_s2r)
 		self.out_r = self.netR_Dehazing(self.img_s2r)
 		self.out_s = self.netS_Dehazing(self.syn_haze_img)
 		self.s2r_dehazing_feat = self.out_r[0]
@@ -287,9 +287,9 @@ class DAnetmodel(BaseModel):
 		self.loss.backward()
 
 		# ============================= real =============================
-		self.img_r2s = self.netR2S(self.real_haze_img, self.real_depth, True)
-		self.idt_R = self.netS2R(self.real_haze_img, self.real_depth, True)
-		self.r_rec_img = self.netS2R(self.img_r2s, self.real_depth, True)
+		self.img_r2s = self.netR2S(self.real_haze_img)
+		self.idt_R = self.netS2R(self.real_haze_img)
+		self.r_rec_img = self.netS2R(self.img_r2s)
 		self.out_s = self.netS_Dehazing(self.img_r2s)
 		self.out_r = self.netR_Dehazing(self.real_haze_img)
 		self.r_dehazing_feat = self.out_r[0]
