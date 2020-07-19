@@ -24,7 +24,7 @@ class RDehazingnetModel(BaseModel):
 			parser.add_argument('--lambda_Dehazing_DC', type=float, default=1e-4, help='weight for dark channel loss')
 			parser.add_argument('--lambda_Dehazing_TV', type=float, default=1e-4, help='weight for TV loss')
 			parser.add_argument('--lambda_gan', type=float, default=0, help='weight for gan loss')
-			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks_depth',
+			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_A')
 			parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_B')
@@ -32,7 +32,7 @@ class RDehazingnetModel(BaseModel):
 
 			parser.add_argument('--R_Dehazing_premodel', type=str, default=" ", help='pretrained Dehazing model')
 		else:
-			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks_depth',
+			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
 							   help='selects model to use for netG_A')
 			parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_B')
@@ -100,7 +100,7 @@ class RDehazingnetModel(BaseModel):
 			input_A = input['A' if AtoB else 'B']
 			input_B = input['B' if AtoB else 'A']
 			input_C = input['C']
-			self.depth = input['D'].to(self.device)
+			#self.depth = input['D'].to(self.device)
 			self.syn_haze_img = input_A.to(self.device)
 			self.real_haze_img = input_C.to(self.device)
 			self.clear_img = input_B.to(self.device)
@@ -118,7 +118,7 @@ class RDehazingnetModel(BaseModel):
 
 		if self.isTrain:
 
-			self.img_s2r = self.netS2R(self.syn_haze_img, self.depth, True).detach()
+			self.img_s2r = self.netS2R(self.syn_haze_img).detach()
 			self.out = self.netR_Dehazing(torch.cat((self.img_s2r, self.real_haze_img), 0))
 			self.s2r_dehazing_img = self.out[-1].narrow(0, 0, self.num)
 			self.r_dehazing_img = self.out[-1].narrow(0, self.num, self.num)

@@ -25,7 +25,7 @@ class SDehazingnetModel(BaseModel):
 			parser.add_argument('--lambda_Dehazing_TV', type=float, default=0.01, help='weight for TV loss')
 			parser.add_argument('--lambda_gan', type=float, default=0, help='weight for gan loss')
 
-			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks_depth',
+			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_A')
 			parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_B')
@@ -33,7 +33,7 @@ class SDehazingnetModel(BaseModel):
 			parser.add_argument('--g_s2r_premodel', type=str, default=" ", help='pretrained G_s2r model')
 			parser.add_argument('--S_Dehazing_premodel', type=str, default=" ", help='pretrained Dehazing model')
 		else:
-			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks_depth',
+			parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
 							   help='selects model to use for netG_A')
 			parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
 								help='selects model to use for netG_B')
@@ -109,8 +109,8 @@ class SDehazingnetModel(BaseModel):
 			input_B = input['B' if AtoB else 'A']
 			input_C = input['C']
 			self.syn_haze_img = input_A.to(self.device)
-			self.depth = input['D'].to(self.device)
-			self.real_depth = input['E'].to(self.device)
+			#self.depth = input['D'].to(self.device)
+			#self.real_depth = input['E'].to(self.device)
 			self.real_haze_img = input_C.to(self.device)
 			self.clear_img = input_B.to(self.device)
 			self.image_paths = input['A_paths' if AtoB else 'B_paths']
@@ -127,8 +127,8 @@ class SDehazingnetModel(BaseModel):
 
 		if self.isTrain:
 
-			self.img_s2r = self.netS2R(self.syn_haze_img, self.depth, True)
-			self.img_r2s = self.netR2S(self.real_haze_img, self.real_depth, True).detach()
+			self.img_s2r = self.netS2R(self.syn_haze_img)
+			self.img_r2s = self.netR2S(self.real_haze_img).detach()
 			self.out = self.netS_Dehazing(torch.cat((self.syn_haze_img, self.img_r2s), 0))
 			# self.out = self.netS_Dehazing(torch.cat((self.syn_haze_img, self.real_haze_img), 0))
 			self.s_dehazing_img = self.out[-1].narrow(0, 0, self.num)
