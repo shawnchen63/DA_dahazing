@@ -51,7 +51,7 @@ class SDehazingnetModel(BaseModel):
 			# self.visual_names = ['s_dehazing_img', 'clear_img', 'syn_haze_img']
 			# self.visual_names = ['real_haze_img', 'img_r2s', 'r2s_dehazing_img']
 			# self.visual_names = ['syn_haze_img', 'img_s2r']
-			self.visual_names = ['s_dehazing_img']
+			self.visual_names = ['syn_haze_img','s_dehazing_img','clear_img']
 		if self.isTrain:
 			self.model_names = ['S_Dehazing','D']
 
@@ -117,11 +117,12 @@ class SDehazingnetModel(BaseModel):
 			self.num = self.syn_haze_img.shape[0]
 		else:
 			#self.real_haze_img = input['C'].to(self.device)
-			self.syn_haze_img = input['C'].to(self.device)
-			#self.clear_img = input['C'].to(self.device)
+			self.syn_haze_img = input['A'].to(self.device)
+      #self.syn_haze_img = input['A'].to(self.device)
+			self.clear_img = input['B'].to(self.device)
 			# self.depth = input['D'].to(self.device)
 			# self.depth = input['F'].to(self.device)
-			self.image_paths = input['C_paths']
+			self.image_paths = input['A_paths']
 
 	def forward(self):
 

@@ -55,6 +55,11 @@ for i, data in enumerate(dataset):
     #avgSSIM += SSIM_d
     #avgSSIM_b += SSIM_b
     img_path = model.get_image_paths()
+    img = Image.fromarray(visuals['r_dehazing_img'], 'RGB')
+    img.save(os.path.join(opt.results_dir,'adj_'+img_path[0].split('/')[-1]))
+    
+    img = Image.fromarray(visuals['real_haze_img'], 'RGB')
+    img.save(os.path.join(opt.results_dir,'ori_'+img_path[0].split('/')[-1]))
     # print('process image... %s ... Deblurred PSNR ... %f' % (img_path, PSNR_d))
     # print('process image... %s ... Blurred PSNR ... %f ... Deblurred PSNR ... %f'
     #     % (img_path, PSNR_b, PSNR_d))
@@ -67,6 +72,6 @@ for i, data in enumerate(dataset):
 #avgSSIM_b /= counter
 # print('Blurred PSNR = %f, Deblurred PSNR = %f' % (avgPSNR_b, avgPSNR))
 #print('PSNR = %f, SSIM = %f' %
-#				  (avgPSNR, avgSSIM))
+#                 (avgPSNR, avgSSIM))
 
 # webpage.save()
