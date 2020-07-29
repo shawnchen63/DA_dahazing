@@ -46,7 +46,6 @@ class CycleGanmodel(BaseModel):
         else:  # during test time, only load Gs
             self.model_names = ['G_A', 'G_B']
 
-        # load/define networks
         # The naming conversion is different from those used in the paper
         # Code (paper): G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
         use_parallel = False
@@ -55,6 +54,10 @@ class CycleGanmodel(BaseModel):
         self.netG_B = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
                                       opt.which_model_netG_B, opt.norm, not opt.no_dropout, self.gpu_ids, use_parallel, opt.learn_residual)
 
+        # load/define networks
+        if opt.continue_train:
+            self.load_networks(opt.which_epoch)
+        
         if self.isTrain:
             use_sigmoid = False
             self.netD_A = networks.define_D(opt.output_nc, opt.ndf,
