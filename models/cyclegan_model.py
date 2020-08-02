@@ -5,7 +5,6 @@ from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
 from . import losses
-from .vgg19_model import VGG19
 
 class CycleGanmodel(BaseModel):
     def name(self):
@@ -73,7 +72,7 @@ class CycleGanmodel(BaseModel):
             self.fake_B_pool = ImagePool(opt.pool_size)
             # define loss functions
             self.criterionGAN = losses.GANLoss(use_ls=True).to(self.device)
-            self.discLoss, self.contentLoss, self.loss_L1, self.loss_ssim = init_loss(opt, self.Tensor)
+            self.discLoss, self.contentLoss, self.loss_L1, self.loss_ssim = losses.init_loss(opt, self.Tensor)
             self.criterionCycle = torch.nn.L1Loss()
             self.criterionIdt = torch.nn.L1Loss()
             # initialize optimizers

@@ -158,7 +158,8 @@ def init_loss(opt, tensor):
 	disc_loss = None
 	content_loss = None
 	L1_loss = None
-	
+	ssim_loss = None
+
 	if opt.model == 'Seminetmodel' or opt.model == 'DAnetmodel' or opt.model == 'DAnetmodel2' or opt.model == 'Syn2realmodel' or opt.model == 'CycleGanmodel':
 		content_loss = PerceptualLoss()
 		content_loss.initialize(nn.MSELoss())
@@ -170,9 +171,13 @@ def init_loss(opt, tensor):
 	elif opt.model == 'pix2pix':
 		content_loss = ContentLoss()
 		content_loss.initialize(nn.L1Loss())
+
+	elif opt.model == 'cyclegan':
+	content_loss = PerceptualLoss()
+		content_loss.initialize(nn.MSELoss())
 	else:
 		raise ValueError("Model [%s] not recognized." % opt.model)
-	
+	"""
 	if opt.gan_type == 'wgan-gp':
 		disc_loss = DiscLossWGANGP() 
 	elif opt.gan_type == 'lsgan':
@@ -182,4 +187,5 @@ def init_loss(opt, tensor):
 	else:
 		raise ValueError("GAN [%s] not recognized." % opt.gan_type)
 	disc_loss.initialize(opt, tensor)
+	"""
 	return disc_loss, content_loss, L1_loss, ssim_loss
