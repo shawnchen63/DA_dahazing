@@ -18,6 +18,8 @@ class CycleGanmodel(BaseModel):
             parser.add_argument('--lambda_A', type=float, default=1.0, help='weight for cycle loss (A -> B -> A)')
             parser.add_argument('--lambda_B', type=float, default=1.0,
                                 help='weight for cycle loss (B -> A -> B)')
+            parser.add_argument('--lambda_C', type=float, default=0.1,
+                                help='weight for perceptual loss')
             parser.add_argument('--lambda_identity', type=float, default=0.1, help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
             parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
                                 help='selects model to use for netG_A')
@@ -126,6 +128,7 @@ class CycleGanmodel(BaseModel):
         lambda_idt = self.opt.lambda_identity
         lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
+        lambda_C = self.opt.lambda_C
         # Identity loss
         if lambda_idt >= 0:
             # G_A should be identity if real_B is fed.
@@ -139,9 +142,9 @@ class CycleGanmodel(BaseModel):
             self.loss_idt_B = torch.Tensor([0])
 
         # GAN loss D_A(G_A(A))
-        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + self.contentLoss.get_loss(self.fake_B, self.real_A)
+        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) +  self.contentLoss.get_loss(self.fake_B, self.real_A) * lambda_C
         # GAN loss D_B(G_B(B))
-        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + self.contentLoss.get_loss(self.fake_A, self.real_B)
+        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + self.contentLoss.get_loss(self.fake_A, self.real_B) * lambda_C
         # Forward cycle loss
         self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
         # Backward cycle loss

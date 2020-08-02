@@ -173,19 +173,19 @@ def init_loss(opt, tensor):
 		content_loss.initialize(nn.L1Loss())
 
 	elif opt.model == 'cyclegan':
-	content_loss = PerceptualLoss()
+		content_loss = PerceptualLoss()
 		content_loss.initialize(nn.MSELoss())
 	else:
 		raise ValueError("Model [%s] not recognized." % opt.model)
 	"""
 	if opt.gan_type == 'wgan-gp':
-		disc_loss = DiscLossWGANGP() 
+	disc_loss = DiscLossWGANGP() 
 	elif opt.gan_type == 'lsgan':
-		disc_loss = DiscLossLS()
+	disc_loss = DiscLossLS()
 	elif opt.gan_type == 'gan':
-		disc_loss = DiscLoss()
+	disc_loss = DiscLoss()
 	else:
-		raise ValueError("GAN [%s] not recognized." % opt.gan_type)
+	raise ValueError("GAN [%s] not recognized." % opt.gan_type)
 	disc_loss.initialize(opt, tensor)
 	"""
 	return disc_loss, content_loss, L1_loss, ssim_loss
