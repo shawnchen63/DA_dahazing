@@ -66,7 +66,7 @@ class CycleGanmodel(BaseModel):
                                           opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids, use_parallel)
 
         # load/define networks
-        if opt.continue_train:
+        if self.isTrain and opt.continue_train:
             self.load_networks(opt.which_epoch)
 
         elif not self.isTrain:
