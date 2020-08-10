@@ -21,9 +21,9 @@ class CycleGanmodel(BaseModel):
             parser.add_argument('--lambda_C', type=float, default=0.1,
                                 help='weight for perceptual loss')
             parser.add_argument('--lambda_identity', type=float, default=0.1, help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
-            parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
+        parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
                                 help='selects model to use for netG_A')
-            parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
+        parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
                                 help='selects model to use for netG_B')
         return parser
 
@@ -66,7 +66,7 @@ class CycleGanmodel(BaseModel):
                                           opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids, use_parallel)
 
         # load/define networks
-        if opt.continue_train:
+        if (not self.isTrain) or opt.continue_train:
             self.load_networks(opt.which_epoch)
 
         if self.isTrain:
