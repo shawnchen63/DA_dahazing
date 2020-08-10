@@ -66,8 +66,12 @@ class CycleGanmodel(BaseModel):
                                           opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids, use_parallel)
 
         # load/define networks
-        if (not self.isTrain) or opt.continue_train:
+        if opt.continue_train:
             self.load_networks(opt.which_epoch)
+
+        elif not self.isTrain:
+            self.init_with_pretrained_model('S2R', self.opt.g_s2r_premodel)
+            self.init_with_pretrained_model('R2S', self.opt.g_r2s_premodel)
 
         if self.isTrain:
             self.fake_A_pool = ImagePool(opt.pool_size)
