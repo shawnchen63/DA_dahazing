@@ -70,8 +70,8 @@ class CycleGanmodel(BaseModel):
             self.load_networks(opt.which_epoch)
 
         elif not self.isTrain:
-            self.init_with_pretrained_model('S2R', self.opt.g_s2r_premodel)
-            self.init_with_pretrained_model('R2S', self.opt.g_r2s_premodel)
+            self.init_with_pretrained_model('G_A', self.opt.g_s2r_premodel)
+            self.init_with_pretrained_model('G_B', self.opt.g_r2s_premodel)
 
         if self.isTrain:
             self.fake_A_pool = ImagePool(opt.pool_size)
