@@ -54,12 +54,34 @@ for i, data in enumerate(dataset):
     #SSIM_d = SSIM(pilFake).cw_ssim_value(pilReal)
     #avgSSIM += SSIM_d
     #avgSSIM_b += SSIM_b
+    """DANET Evaluation
     img_path = model.get_image_paths()
     img = Image.fromarray(visuals['r_dehazing_img'], 'RGB')
-    img.save(os.path.join(opt.results_dir,'adj_'+img_path[0].split('/')[-1]))
+    img.save(os.path.join(opt.results_dir,'syn'+img_path[0].split('/')[-1]))
     
     img = Image.fromarray(visuals['real_haze_img'], 'RGB')
     img.save(os.path.join(opt.results_dir,'ori_'+img_path[0].split('/')[-1]))
+    """
+    #CYCLEGAN Eval
+    img_path = model.get_image_paths()
+    img = Image.fromarray(visuals['real_A'], 'RGB')
+    img.save(os.path.join(opt.results_dir,img_path[i].split('/')[-1]+'_Syn'))
+
+    img = Image.fromarray(visuals['fake_B'], 'RGB')
+    img.save(os.path.join(opt.results_dir,img_path[i].split('/')[-1]+'_S2R'))
+    
+    img = Image.fromarray(visuals['rec_A'], 'RGB')
+    img.save(os.path.join(opt.results_dir,img_path[i].split('/')[-1]+'_rec_Syn'))
+    
+    img = Image.fromarray(visuals['real_B'], 'RGB')
+    img.save(os.path.join(opt.results_dir,img_path[i].split('/')[-1]+'_Real'))
+
+    img = Image.fromarray(visuals['fake_A'], 'RGB')
+    img.save(os.path.join(opt.results_dir,img_path[i].split('/')[-1]+'_R2S'))
+    
+    img = Image.fromarray(visuals['rec_B'], 'RGB')
+    img.save(os.path.join(opt.results_dir,img_path[i].split('/')[-1]+'_rec_Real'))
+    
     # print('process image... %s ... Deblurred PSNR ... %f' % (img_path, PSNR_d))
     # print('process image... %s ... Blurred PSNR ... %f ... Deblurred PSNR ... %f'
     #     % (img_path, PSNR_b, PSNR_d))
