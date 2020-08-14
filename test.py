@@ -63,25 +63,34 @@ for i, data in enumerate(dataset):
     img.save(os.path.join(opt.results_dir,'ori_'+img_path[0].split('/')[-1]))
     """
     #CYCLEGAN Eval
-    img_path = model.get_image_paths()
-    img = Image.fromarray(visuals['real_A'], 'RGB')
-    img.save(os.path.join(opt.results_dir,'Syn_'+img_path[i].split('/')[-1]))
+    if opt.model == 'cyclegan':
+        img_path = model.get_image_paths()
+        img = Image.fromarray(visuals['real_A'], 'RGB')
+        img.save(os.path.join(opt.results_dir,str(counter)+'_Syn'+'.png'))
 
-    img = Image.fromarray(visuals['fake_B'], 'RGB')
-    img.save(os.path.join(opt.results_dir,'Syn_'+img_path[i].split('/')[-1]))
-    
-    img = Image.fromarray(visuals['rec_A'], 'RGB')
-    img.save(os.path.join(opt.results_dir,'rec_Syn_'+img_path[i].split('/')[-1]))
-    
-    img = Image.fromarray(visuals['real_B'], 'RGB')
-    img.save(os.path.join(opt.results_dir,'Real_'+img_path[i].split('/')[-1]))
+        img = Image.fromarray(visuals['fake_B'], 'RGB')
+        img.save(os.path.join(opt.results_dir,str(counter)+'_S2R'+'.png'))
+        
+        img = Image.fromarray(visuals['rec_A'], 'RGB')
+        img.save(os.path.join(opt.results_dir,str(counter)+'_rec_Syn'+'.png'))
+        
+        img = Image.fromarray(visuals['real_B'], 'RGB')
+        img.save(os.path.join(opt.results_dir,str(counter)+'_Real'+'.png'))
 
-    img = Image.fromarray(visuals['fake_A'], 'RGB')
-    img.save(os.path.join(opt.results_dir,'R2S_'+img_path[i].split('/')[-1]))
-    
-    img = Image.fromarray(visuals['rec_B'], 'RGB')
-    img.save(os.path.join(opt.results_dir,'rec_Real_'+img_path[i].split('/')[-1]))
-    
+        img = Image.fromarray(visuals['fake_A'], 'RGB')
+        img.save(os.path.join(opt.results_dir,str(counter)+'_R2S'+'.png'))
+        
+        img = Image.fromarray(visuals['rec_B'], 'RGB')
+        img.save(os.path.join(opt.results_dir,str(counter)+'_rec_Real'+'.png'))
+
+    else:
+        img_path = model.get_image_paths()
+        img = Image.fromarray(visuals['r_dehazing_img'], 'RGB')
+        img.save(os.path.join(opt.results_dir,'syn'+img_path[0].split('/')[-1]))
+        
+        img = Image.fromarray(visuals['real_haze_img'], 'RGB')
+        img.save(os.path.join(opt.results_dir,'ori_'+img_path[0].split('/')[-1]))
+
     # print('process image... %s ... Deblurred PSNR ... %f' % (img_path, PSNR_d))
     # print('process image... %s ... Blurred PSNR ... %f ... Deblurred PSNR ... %f'
     #     % (img_path, PSNR_b, PSNR_d))
