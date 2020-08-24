@@ -44,8 +44,24 @@ class PerceptualLoss():
 		f_real_no_grad = f_real.detach()
 		loss = self.criterion(f_fake, f_real_no_grad)
 		return loss
-		
 
+class L_exp(nn.Module):
+
+    def __init__(self,patch_size=16,mean_val=0.6):
+        super(L_exp, self).__init__()
+        # print(1)
+        self.pool = nn.AvgPool2d(patch_size)
+        self.mean_val = mean_val
+    
+    def forward(self, x,E ):
+
+        #b,c,h,w = x.shape
+        x = torch.mean(x,1,keepdim=True)
+        mean = self.pool(x)
+
+        d = torch.mean(torch.pow(mean- torch.FloatTensor([E] ).cuda(),2))
+        return d
+		
 class GANLoss(nn.Module):
     def __init__(self, use_ls=True, target_real_label=1.0, target_fake_label=0.0):
         super(GANLoss, self).__init__()
@@ -175,6 +191,7 @@ def init_loss(opt, tensor):
 	elif opt.model == 'cyclegan':
 		content_loss = PerceptualLoss()
 		content_loss.initialize(nn.MSELoss())
+		exp_loss = L_exp()
 	else:
 		raise ValueError("Model [%s] not recognized." % opt.model)
 	"""
@@ -188,4 +205,4 @@ def init_loss(opt, tensor):
 	raise ValueError("GAN [%s] not recognized." % opt.gan_type)
 	disc_loss.initialize(opt, tensor)
 	"""
-	return disc_loss, content_loss, L1_loss, ssim_loss
+	return disc_loss, content_loss, L1_loss, ssim_loss, exp_loss

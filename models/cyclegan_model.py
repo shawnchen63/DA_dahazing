@@ -1,6 +1,7 @@
 # two cyclegan :syn2real, real2syn
 import torch
 import itertools
+import numpy as np
 from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
@@ -78,7 +79,7 @@ class CycleGanmodel(BaseModel):
             self.fake_B_pool = ImagePool(opt.pool_size)
             # define loss functions
             self.criterionGAN = losses.GANLoss(use_ls=True).to(self.device)
-            self.discLoss, self.contentLoss, self.loss_L1, self.loss_ssim = losses.init_loss(opt, self.Tensor)
+            self.discLoss, self.contentLoss, self.loss_L1, self.loss_ssim, self.exp_loss = losses.init_loss(opt, self.Tensor)
             self.criterionCycle = torch.nn.L1Loss()
             self.criterionIdt = torch.nn.L1Loss()
             # initialize optimizers
@@ -145,10 +146,12 @@ class CycleGanmodel(BaseModel):
             self.loss_idt_A = torch.Tensor([0])
             self.loss_idt_B = torch.Tensor([0])
 
+        E = (0.1+ 0.4*np.random.rand())
+
         # GAN loss D_A(G_A(A))
-        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) +  self.contentLoss.get_loss(self.fake_B, self.real_A) * lambda_C
+        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + torch.mean(L_exp(self.fake_B, E))
         # GAN loss D_B(G_B(B))
-        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + self.contentLoss.get_loss(self.fake_A, self.real_B) * lambda_C
+        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + torch.mean(L_exp(self.fake_A, E))
         # Forward cycle loss
         self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
         # Backward cycle loss
