@@ -21,6 +21,8 @@ class CycleGanmodel(BaseModel):
                                 help='weight for cycle loss (B -> A -> B)')
             parser.add_argument('--lambda_C', type=float, default=0.1,
                                 help='weight for perceptual loss')
+            parser.add_argument('--lambda_D', type=float, default=0.5,
+                                help='weight for exposure loss')
             parser.add_argument('--lambda_identity', type=float, default=0.1, help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
         parser.add_argument('--which_model_netG_A', type=str, default='resnet_9blocks',
                                 help='selects model to use for netG_A')
@@ -134,6 +136,7 @@ class CycleGanmodel(BaseModel):
         lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
         lambda_C = self.opt.lambda_C
+        lambda_D = self.opt.lambda_D
         # Identity loss
         if lambda_idt >= 0:
             # G_A should be identity if real_B is fed.
@@ -149,9 +152,9 @@ class CycleGanmodel(BaseModel):
         E = (0.1+ 0.4*np.random.rand())
 
         # GAN loss D_A(G_A(A))
-        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + torch.mean(self.L_exp(self.fake_B, E))
+        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_D * torch.mean(self.L_exp(self.fake_B, E))
         # GAN loss D_B(G_B(B))
-        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + torch.mean(self.L_exp(self.fake_A, E))
+        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + lambda_D * torch.mean(self.L_exp(self.fake_A, E))
         # Forward cycle loss
         self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
         # Backward cycle loss
