@@ -152,9 +152,9 @@ class CycleGanmodel(BaseModel):
         E = (0.1+ 0.4*np.random.rand())
 
         # GAN loss D_A(G_A(A))
-        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_D * torch.mean(self.L_exp(self.fake_B, E))
+        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_D * torch.mean(self.L_exp(self.fake_B, E)) + lambda_C * self.contentLoss.get_loss(self.fake_B, self.real_A)
         # GAN loss D_B(G_B(B))
-        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + lambda_D * torch.mean(self.L_exp(self.fake_A, E))
+        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + lambda_D * torch.mean(self.L_exp(self.fake_A, E)) + lambda_C * self.contentLoss.get_loss(self.fake_A, self.real_B)
         # Forward cycle loss
         self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
         # Backward cycle loss
