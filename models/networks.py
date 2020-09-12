@@ -389,8 +389,6 @@ class ResnetGenerator(nn.Module):
             else:
                 output = self.first_model(input)
                 output_E_x = self.e_model(E_x)
-                print(output.size())
-                print(output_E_x.size())
                 output = output + output_E_x
                 output = self.second_model(output)
             if self.learn_residual:

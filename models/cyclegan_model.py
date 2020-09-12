@@ -168,7 +168,7 @@ class CycleGanmodel(BaseModel):
         # G_A and G_B
         self.set_requires_grad([self.netD_A, self.netD_B], False)
         self.optimizer_G.zero_grad()
-        self.backward_G()
+        self.backward_G(e)
         self.optimizer_G.step()
         # D_A and D_B
         self.set_requires_grad([self.netD_A, self.netD_B], True)
