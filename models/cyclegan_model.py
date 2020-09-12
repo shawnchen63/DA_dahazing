@@ -101,14 +101,14 @@ class CycleGanmodel(BaseModel):
         #self.real_B_depth = input['E'].to(self.device)
         self.image_paths = input['A_paths' if AtoB else 'C_paths']
 
-    def forward(self):
+    def forward(self, e):
         #self.fake_B = self.netG_A(self.real_A, self.depth, True)
-        self.fake_B = self.netG_A(self.real_A)
+        self.fake_B = self.netG_A(self.real_A, e)
 
-        self.rec_A = self.netG_B(self.fake_B)
+        self.rec_A = self.netG_B(self.fake_B, e)
 
-        self.fake_A = self.netG_B(self.real_B)
-        self.rec_B = self.netG_A(self.fake_A)
+        self.fake_A = self.netG_B(self.real_B, e)
+        self.rec_B = self.netG_A(self.fake_A, e)
 
     def backward_D_basic(self, netD, real, fake):
         # Real
@@ -131,7 +131,7 @@ class CycleGanmodel(BaseModel):
         fake_A = self.fake_A_pool.query(self.fake_A)
         self.loss_D_B = self.backward_D_basic(self.netD_B, self.real_A, fake_A)
 
-    def backward_G(self):
+    def backward_G(self, e):
         lambda_idt = self.opt.lambda_identity
         lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
@@ -149,12 +149,10 @@ class CycleGanmodel(BaseModel):
             self.loss_idt_A = torch.Tensor([0])
             self.loss_idt_B = torch.Tensor([0])
 
-        E = (0.1+ 0.4*np.random.rand())
-
         # GAN loss D_A(G_A(A))
-        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_D * torch.mean(self.L_exp(self.fake_B, E)) + lambda_C * self.contentLoss.get_loss(self.fake_B, self.real_A)
+        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_D * torch.mean(self.L_exp(self.fake_B, e)) + lambda_C * self.contentLoss.get_loss(self.fake_B, self.real_A)
         # GAN loss D_B(G_B(B))
-        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + lambda_D * torch.mean(self.L_exp(self.fake_A, E)) + lambda_C * self.contentLoss.get_loss(self.fake_A, self.real_B)
+        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + lambda_D * torch.mean(self.L_exp(self.fake_A, e)) + lambda_C * self.contentLoss.get_loss(self.fake_A, self.real_B)
         # Forward cycle loss
         self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
         # Backward cycle loss
@@ -165,7 +163,8 @@ class CycleGanmodel(BaseModel):
 
     def optimize_parameters(self):
         # forward
-        self.forward()
+        e = (0.1+ 0.4*np.random.rand())
+        self.forward(e)
         # G_A and G_B
         self.set_requires_grad([self.netD_A, self.netD_B], False)
         self.optimizer_G.zero_grad()

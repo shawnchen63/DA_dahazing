@@ -337,6 +337,7 @@ class ResnetGenerator(nn.Module):
         self.gpu_ids = gpu_ids
         self.use_parallel = use_parallel
         self.learn_residual = learn_residual
+        self.padding_type = padding_type
         if type(norm_layer) == functools.partial:
             use_bias = norm_layer.func == nn.InstanceNorm2d
         else:
@@ -347,6 +348,11 @@ class ResnetGenerator(nn.Module):
                            bias=use_bias),
                  norm_layer(ngf),
                  nn.ReLU(True)]
+
+        self.first_model = nn.Sequential(*model)
+        self.e_model = nn.Sequential(*model)
+
+        model = []
 
         n_downsampling = 2
         for i in range(n_downsampling):
@@ -373,15 +379,34 @@ class ResnetGenerator(nn.Module):
         model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
         model += [nn.Tanh()]
 
-        self.model = nn.Sequential(*model)
-    def forward(self, input):
-        if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
-            output = nn.parallel.data_parallel(self.model, input, self.gpu_ids)
+        self.second_model = nn.Sequential(*model)
+    def forward(self, input, e=None):
+        if e:
+            E_x = torch.full_like(input, e)
+            if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
+                output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
+                output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
+            else:
+                output = self.first_model(input)
+                output_E_x = self.e_model(E_x)
+                print(output.size())
+                print(output_E_x.size())
+                output = output + output_E_x
+                output = self.second_model(output)
+            if self.learn_residual:
+                output = input + output
+                output = torch.clamp(output, min=-1, max=1)
+
         else:
-            output = self.model(input)
-        if self.learn_residual:
-            output = input + output
-            output = torch.clamp(output, min=-1, max=1)
+            if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
+                output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
+                output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
+            else:
+                output = self.first_model(input)
+                output = self.second_model(output)
+            if self.learn_residual:
+                output = input + output
+                output = torch.clamp(output, min=-1, max=1)
         return output
 
 
