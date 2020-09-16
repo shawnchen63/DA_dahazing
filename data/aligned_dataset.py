@@ -124,36 +124,36 @@ class AlignedDataset(BaseDataset):
                     'A_paths': A_path, 'B_paths': B_path}
 
         elif self.opt.phase == 'test':
-            if self.opt.test_type == 'syn':
-                A_path = self.A_paths[index]
-                B_path = self.B_paths[index]
-                #F = Image.open(F_path)
-                A = Image.open(A_path).convert('RGB')
-                B = Image.open(B_path).convert('RGB')
-                ori_w = A.width
-                ori_h = B.height
-                #ori_fw = F.width
-                #ori_fh = F.height
+            #if self.opt.test_type == 'syn':
+            A_path = self.A_paths[index]
+            B_path = self.B_paths[index]
+            #F = Image.open(F_path)
+            A = Image.open(A_path).convert('RGB')
+            B = Image.open(B_path).convert('RGB')
+            ori_w = A.width
+            ori_h = B.height
+            #ori_fw = F.width
+            #ori_fh = F.height
 
 
-                # new_w = int(np.floor(ori_w/32)*32)
-                # new_h = int(np.floor(ori_h/16)*16)
-                # new_w = ori_w
-                # new_h = ori_h
-                new_w = 512
-                new_h = 512
-                A = A.resize((int(new_w), int(new_h)), Image.BICUBIC)
-                B = B.resize((int(new_w), int(new_h)), Image.BICUBIC)
-                A = self.transform1(A)
-                B = self.transform1(B)
-                A = self.transform2(A)
-                B = self.transform2(B)
-                #F = F.resize((ori_fw, ori_fh), Image.BICUBIC)
-                #F = self.transform1(F)
-                #F = self.transform2(F)
-                #A = AB[:,:,0:int(new_w/2)]
-                #B = AB[:,:,int(new_w/2):new_w]
-                return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
+            # new_w = int(np.floor(ori_w/32)*32)
+            # new_h = int(np.floor(ori_h/16)*16)
+            # new_w = ori_w
+            # new_h = ori_h
+            new_w = 512
+            new_h = 512
+            A = A.resize((int(new_w), int(new_h)), Image.BICUBIC)
+            B = B.resize((int(new_w), int(new_h)), Image.BICUBIC)
+            A = self.transform1(A)
+            B = self.transform1(B)
+            A = self.transform2(A)
+            B = self.transform2(B)
+            #F = F.resize((ori_fw, ori_fh), Image.BICUBIC)
+            #F = self.transform1(F)
+            #F = self.transform2(F)
+            #A = AB[:,:,0:int(new_w/2)]
+            #B = AB[:,:,int(new_w/2):new_w]
+            return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
 
             elif self.opt.test_type == 'real':
