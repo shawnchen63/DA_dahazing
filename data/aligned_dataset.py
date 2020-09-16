@@ -153,22 +153,23 @@ class AlignedDataset(BaseDataset):
             #F = self.transform2(F)
             #A = AB[:,:,0:int(new_w/2)]
             #B = AB[:,:,int(new_w/2):new_w]
-            return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
+            #    return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
 
-            elif self.opt.test_type == 'real':
-                C_path = self.C_paths[index]
-                C = Image.open(C_path).convert('RGB')
-                C_w = C.width
-                C_h = C.height
-                # C = C.resize((C_w, C_h), Image.BICUBIC)
+            #elif self.opt.test_type == 'real':
+            C_path = self.C_paths[index]
+            C = Image.open(C_path).convert('RGB')
+            C_w = C.width
+            C_h = C.height
+            # C = C.resize((C_w, C_h), Image.BICUBIC)
 
-                new_w = int(np.floor(C_w / 16) * 16)
-                new_h = int(np.floor(C_h / 16) * 16)
-                C = C.resize((int(new_w), int(new_h)), Image.BICUBIC)
-                C = self.transform1(C)
-                C = self.transform2(C)
-                return {'C': C, 'C_paths': C_path}
+            new_w = int(np.floor(C_w / 16) * 16)
+            new_h = int(np.floor(C_h / 16) * 16)
+            C = C.resize((int(new_w), int(new_h)), Image.BICUBIC)
+            C = self.transform1(C)
+            C = self.transform2(C)
+            return {'A': A, 'B': B, 'C': C, 'C_paths': C_path,
+                    'A_paths': A_path, 'B_paths': B_path}
         #A = self.transformPIL(A)
         #B = self.transformPIL(B)
         #A_half = self.transformPIL(A_half)
