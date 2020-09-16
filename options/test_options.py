@@ -15,6 +15,7 @@ class TestOptions(BaseOptions):
         parser.add_argument('--S_Dehazing_premodel', type=str, default=" ", help='pretrained Dehazing model')
         parser.add_argument('--g_s2r_premodel', type=str, default=" ", help='pretrained G_s2r model')
         parser.add_argument('--g_r2s_premodel', type=str, default=" ", help='pretrained G_r2s model')
+        parser.add_argument('--exposure', type=float, default=0.1, help='E value for exposure loss')
         self.isTrain = False
 
         return parser

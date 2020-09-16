@@ -51,9 +51,9 @@ class BaseModel():
 
     # used in test time, wrapping `forward` in no_grad() so we don't save
     # intermediate steps for backprop
-    def test(self):
+    def test(self, e):
         with torch.no_grad():
-            self.forward()
+            self.forward(e)
 
     # get image paths
     def get_image_paths(self):

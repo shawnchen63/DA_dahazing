@@ -39,7 +39,7 @@ for i, data in enumerate(dataset):
         break
     counter = i
     model.set_input(data)
-    model.test()
+    model.test(opt.exposure)
     visuals = model.get_current_visuals()
     visualizer.display_current_results(visuals, counter)
     # PSNR_b = PSNR(visuals['syn_haze_img'], visuals['clear_img'])
