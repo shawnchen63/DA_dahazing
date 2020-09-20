@@ -352,11 +352,14 @@ class ResnetGenerator(nn.Module):
         self.first_model = nn.Sequential(*model)
         self.e_model = nn.Sequential(*model)
 
-        model = []
+        model = [nn.Conv2d(ngf * 2, ngf * 2, kernel_size=3,
+                    stride=2, padding=1, bias=use_bias),
+                    norm_layer(ngf * 2),
+                    nn.ReLU(True)]
 
         n_downsampling = 2
-        for i in range(n_downsampling):
-            mult = 2**i
+        for i in range(1, n_downsampling):
+            mult = 2 ** i
             model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3,
                                 stride=2, padding=1, bias=use_bias),
                       norm_layer(ngf * mult * 2),
@@ -380,6 +383,7 @@ class ResnetGenerator(nn.Module):
         model += [nn.Tanh()]
 
         self.second_model = nn.Sequential(*model)
+        
     def forward(self, input, e=None):
         if e:
             E_x = torch.full_like(input, e)

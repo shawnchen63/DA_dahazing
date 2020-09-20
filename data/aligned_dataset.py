@@ -140,8 +140,8 @@ class AlignedDataset(BaseDataset):
             # new_h = int(np.floor(ori_h/16)*16)
             # new_w = ori_w
             # new_h = ori_h
-            new_w = 512
-            new_h = 512
+            new_w = self.opt.fineSize
+            new_h = self.opt.fineSize
             A = A.resize((int(new_w), int(new_h)), Image.BICUBIC)
             B = B.resize((int(new_w), int(new_h)), Image.BICUBIC)
             A = self.transform1(A)
@@ -163,8 +163,8 @@ class AlignedDataset(BaseDataset):
             C_h = C.height
             # C = C.resize((C_w, C_h), Image.BICUBIC)
 
-            new_w = int(np.floor(C_w / 16) * 16)
-            new_h = int(np.floor(C_h / 16) * 16)
+            #new_w = int(np.floor(C_w / 16) * 16)
+            #new_h = int(np.floor(C_h / 16) * 16)
             C = C.resize((int(new_w), int(new_h)), Image.BICUBIC)
             C = self.transform1(C)
             C = self.transform2(C)
