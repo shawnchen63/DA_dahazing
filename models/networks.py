@@ -386,36 +386,6 @@ class ResnetGenerator(nn.Module):
             output = torch.clamp(output, min=-1, max=1)
         return output
 
-
-    def forward(self, input, e=None):
-        if e:
-            E_x = torch.full_like(input, e)
-            if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
-                output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
-                output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
-            else:
-                output = self.first_model(input)
-                output_E_x = self.e_model(E_x)
-
-                output = torch.cat([output,output_E_x], dim=1)
-                output = self.second_model(output)
-
-            if self.learn_residual:
-                output = input + output
-                output = torch.clamp(output, min=-1, max=1)
-
-        else:
-            if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
-                output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
-                output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
-            else:
-                output = self.first_model(input)
-                output = self.second_model(output)
-            if self.learn_residual:
-                output = input + output
-                output = torch.clamp(output, min=-1, max=1)
-        return output
-
 class ResnetGenerator_exposure(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, gpu_ids=[], use_parallel = True, learn_residual = False, padding_type='reflect'):
         assert(n_blocks >= 0)
