@@ -383,7 +383,7 @@ class ResnetGenerator(nn.Module):
         model += [nn.Tanh()]
 
         self.second_model = nn.Sequential(*model)
-        
+
     def forward(self, input, e=None):
         if e:
             E_x = torch.full_like(input, e)
@@ -393,8 +393,10 @@ class ResnetGenerator(nn.Module):
             else:
                 output = self.first_model(input)
                 output_E_x = self.e_model(E_x)
-                output = output + output_E_x
+
+                output = torch.cat([output,output_E_x], dim=1)
                 output = self.second_model(output)
+                
             if self.learn_residual:
                 output = input + output
                 output = torch.clamp(output, min=-1, max=1)
@@ -410,7 +412,6 @@ class ResnetGenerator(nn.Module):
                 output = input + output
                 output = torch.clamp(output, min=-1, max=1)
         return output
-
 
 class SFT_layer(nn.Module):
     def __init__(self):
