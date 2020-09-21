@@ -409,7 +409,7 @@ class ResnetGenerator_exposure(nn.Module):
                  nn.ReLU(True)]
 
         self.first_model = nn.Sequential(*model)
-        self.e_model = nn.Sequential(*model)
+        #self.e_model = nn.Sequential(*model)
 
         model = [nn.Conv2d(ngf * 2, ngf * 2, kernel_size=3,
                     stride=2, padding=1, bias=use_bias),
@@ -451,7 +451,7 @@ class ResnetGenerator_exposure(nn.Module):
                 output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
             else:
                 output = self.first_model(input)
-                output_E_x = self.e_model(E_x)
+                output_E_x = self.first_model(E_x)
 
                 output = torch.cat([output,output_E_x], dim=1)
                 output = self.second_model(output)
