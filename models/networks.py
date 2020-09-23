@@ -389,7 +389,7 @@ class ResnetGenerator(nn.Module):
 class ResnetGenerator_exposure(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, gpu_ids=[], use_parallel = True, learn_residual = False, padding_type='reflect'):
         assert(n_blocks >= 0)
-        super(ResnetGenerator_exposure, self).__init__()
+        super(ResnetGenerator, self).__init__()
         self.input_nc = input_nc
         self.output_nc = output_nc
         self.ngf = ngf
@@ -408,34 +408,45 @@ class ResnetGenerator_exposure(nn.Module):
                  norm_layer(ngf),
                  nn.ReLU(True)]
 
-        self.first_model = nn.Sequential(*model)
-        #self.e_model = nn.Sequential(*model)
-
-        model = [nn.Conv2d(ngf * 2, ngf * 2, kernel_size=3,
-                    stride=2, padding=1, bias=use_bias),
-                    norm_layer(ngf * 2),
-                    nn.ReLU(True)]
 
         n_downsampling = 2
-        for i in range(1, n_downsampling):
-            mult = 2 ** i
+        for i in range(n_downsampling):
+            mult = 2**i
             model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3,
                                 stride=2, padding=1, bias=use_bias),
                       norm_layer(ngf * mult * 2),
                       nn.ReLU(True)]
 
+        self.first_model = nn.Sequential(*model)
+        
+        #self.e_model = nn.Sequential(*model)
+
+        model = []
+
         mult = 2**n_downsampling
         for i in range(n_blocks):
-            model += [ResnetBlock(ngf * mult, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+            model += [ResnetBlock(ngf * mult* 2, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
 
         for i in range(n_downsampling):
             mult = 2**(n_downsampling - i)
-            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
-                                         kernel_size=3, stride=2,
-                                         padding=1, output_padding=1,
-                                         bias=use_bias),
-                      norm_layer(int(ngf * mult / 2)),
-                      nn.ReLU(True)]
+            
+            if i ==0:
+
+              model += [nn.ConvTranspose2d(ngf * mult*2, int(ngf * mult / 2),
+                                            kernel_size=3, stride=2,
+                                            padding=1, output_padding=1,
+                                            bias=use_bias),
+                        norm_layer(int(ngf * mult / 2)),
+                        nn.ReLU(True)]
+
+            else:
+
+              model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                            kernel_size=3, stride=2,
+                                            padding=1, output_padding=1,
+                                            bias=use_bias),
+                        norm_layer(int(ngf * mult / 2)),
+                        nn.ReLU(True)]
 
         model += [nn.ReflectionPad2d(3)]
         model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
@@ -445,17 +456,18 @@ class ResnetGenerator_exposure(nn.Module):
 
     def forward(self, input, e=None):
         if e:
-            E_x = torch.full_like(input, e)
+             = torch.full_like(input, e)
             if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
+                
                 output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
+                output_E_x = nn.parallel.data_parallel(self.first_model, E_x, self.gpu_ids)
+                output = torch.cat([output,output_E_x], dim=1)
                 output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
             else:
                 output = self.first_model(input)
                 output_E_x = self.first_model(E_x)
-
                 output = torch.cat([output,output_E_x], dim=1)
                 output = self.second_model(output)
-                
             if self.learn_residual:
                 output = input + output
                 output = torch.clamp(output, min=-1, max=1)
@@ -471,6 +483,7 @@ class ResnetGenerator_exposure(nn.Module):
                 output = input + output
                 output = torch.clamp(output, min=-1, max=1)
         return output
+
 
 
 class SFT_layer(nn.Module):

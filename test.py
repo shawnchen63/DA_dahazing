@@ -9,6 +9,7 @@ from util import html
 from util.metrics import PSNR
 from util.metrics import SSIM
 from PIL import Image
+from tqdm import tqdm
 
 opt = TestOptions().parse()
 opt.nThreads = 1  # test code only supports nThreads = 1
@@ -34,7 +35,7 @@ avgPSNR_b = 0.0
 #avgSSIM_b = 0.0
 counter = 0
 
-for i, data in enumerate(dataset):
+for i, data in enumerate(tqdm(dataset, total=opt.how_many)):
     if i >= opt.how_many:
         break
     counter = i
