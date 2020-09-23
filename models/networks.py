@@ -456,7 +456,7 @@ class ResnetGenerator_exposure(nn.Module):
 
     def forward(self, input, e=None):
         if e:
-             = torch.full_like(input, e)
+            E_x = torch.full_like(input, e)
             if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
                 
                 output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
