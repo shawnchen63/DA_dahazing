@@ -418,8 +418,7 @@ class ResnetGenerator_exposure(nn.Module):
                       nn.ReLU(True)]
 
         self.first_model = nn.Sequential(*model)
-        
-        #self.e_model = nn.Sequential(*model)
+        self.e_model = nn.Sequential(*model)
 
         model = []
 
@@ -460,12 +459,12 @@ class ResnetGenerator_exposure(nn.Module):
             if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
                 
                 output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
-                output_E_x = nn.parallel.data_parallel(self.first_model, E_x, self.gpu_ids)
+                output_E_x = nn.parallel.data_parallel(self.e_model, E_x, self.gpu_ids)
                 output = torch.cat([output,output_E_x], dim=1)
                 output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
             else:
                 output = self.first_model(input)
-                output_E_x = self.first_model(E_x)
+                output_E_x = self.e_model(E_x)
                 output = torch.cat([output,output_E_x], dim=1)
                 output = self.second_model(output)
             if self.learn_residual:
