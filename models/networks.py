@@ -408,7 +408,6 @@ class ResnetGenerator_exposure(nn.Module):
                  norm_layer(ngf),
                  nn.ReLU(True)]
 
-
         n_downsampling = 2
         for i in range(n_downsampling):
             mult = 2**i
@@ -418,7 +417,16 @@ class ResnetGenerator_exposure(nn.Module):
                       nn.ReLU(True)]
 
         self.first_model = nn.Sequential(*model)
-        self.e_model = nn.Sequential(*model)
+        
+        e_model = []
+
+        e_model += [nn.Conv2d(input_nc, ngf, kernel_size=3, padding=0, bias=use_bias),
+                    nn.ReLU(True),
+                    nn.Conv2d(ngf, ngf*2, kernel_size=3, padding=1, stride=2, bias=use_bias),
+                    nn.ReLU(True),
+                    nn.Conv2d(ngf*2, ngf*2*2, kernel_size=3, padding=1, stride=2, bias=use_bias),
+                    nn.ReLU(True),]
+        self.e_model = nn.Sequential(*e_model)
 
         model = []
 
@@ -459,7 +467,7 @@ class ResnetGenerator_exposure(nn.Module):
             if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
                 
                 output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
-                output_E_x = nn.parallel.data_parallel(self.e_model, E_x, self.gpu_ids)
+                output_E_x = nn.parallel.data_parallel(self.first_model, E_x, self.gpu_ids)
                 output = torch.cat([output,output_E_x], dim=1)
                 output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
             else:
@@ -482,7 +490,6 @@ class ResnetGenerator_exposure(nn.Module):
                 output = input + output
                 output = torch.clamp(output, min=-1, max=1)
         return output
-
 
 
 class SFT_layer(nn.Module):
