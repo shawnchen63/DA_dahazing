@@ -37,7 +37,7 @@ class CycleGanmodel(BaseModel):
         self.loss_names = ['D_A', 'G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B']
         # specify the images you want to save/display. The program will call base_model.get_current_visuals
         #visual_names_A = ['real_A', 'depth', 'fake_B', 'rec_A']
-        visual_names_A = ['real_A', 'fake_B', 'rec_A']
+        visual_names_A = ['real_A', 'fake_B', 'rec_A', 'input_B']
         #visual_names_B = ['real_B', 'real_B_depth', 'fake_A', 'rec_B']
         visual_names_B = ['real_B', 'fake_A', 'rec_B']
         if self.isTrain and self.opt.lambda_identity > 0.0:
@@ -98,6 +98,7 @@ class CycleGanmodel(BaseModel):
         self.real_A = input['A' if AtoB else 'C'].to(self.device)
         #self.depth =  input['D'].to(self.device)
         self.real_B = input['C' if AtoB else 'A'].to(self.device)
+        self.input_B = input['B'].to(self.device)
         #self.real_B_depth = input['E'].to(self.device)
         self.image_paths = input['A_paths' if AtoB else 'C_paths']
 
