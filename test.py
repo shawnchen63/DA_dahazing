@@ -77,7 +77,7 @@ for i, data in enumerate(tqdm(dataset, total=len(dataset))):
                 img.save(os.path.join(opt.results_dir,str(counter)+'_Input'+'.png'))
 
                 img = Image.fromarray(visuals['input_B'], 'RGB')
-                img.save(os.path.join(opt.results_dir,str(counter)+'_ExpertC'+'.png'))
+                img.save(os.path.join(opt.results_dir,str(counter)+'_Target'+'.png'))
 
             img = Image.fromarray(visuals['fake_B'], 'RGB')
             img.save(os.path.join(opt.results_dir,str(counter)+'_'+str(exposure_label[j])+'.png'))
