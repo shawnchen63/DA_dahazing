@@ -143,7 +143,7 @@ class CycleGanmodel(BaseModel):
             # G_A should be identity if real_B is fed.
             self.idt_A = self.netG_A(self.real_B, e)
             self.loss_idt_A = self.criterionIdt(self.idt_A, self.real_B) * lambda_B * lambda_idt
-            # G_B should be identity if real_A is fed.
+            # G_B should be identity if real_A is fcriterionIdted.
             self.idt_B = self.netG_B(self.real_A)
             self.loss_idt_B = self.criterionIdt(self.idt_B, self.real_A) * lambda_A * lambda_idt
         else:
@@ -164,7 +164,7 @@ class CycleGanmodel(BaseModel):
 
     def optimize_parameters(self):
         # forward
-        e = min((0.001+ 0.1*np.random.rand()),0.1)
+        e = 0.01*np.random.rand()
         self.forward(e)
         # G_A and G_B
         self.set_requires_grad([self.netD_A, self.netD_B], False)

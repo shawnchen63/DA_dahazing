@@ -35,7 +35,7 @@ avgPSNR_b = 0.0
 #avgSSIM_b = 0.0
 counter = 0
 
-exposure_list = [0.00000001, 0.01, 0.02, 0.05, 0.1]
+exposure_list = [0.00000001, 0.001, 0.002, 0.005, 0.01]
 exposure_label = ['00', '01', '02', '05', '10']
 
 for i, data in enumerate(tqdm(dataset, total=len(dataset))):
