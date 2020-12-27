@@ -164,7 +164,7 @@ class CycleGanmodel(BaseModel):
 
     def optimize_parameters(self):
         # forward
-        e = 0.01*np.random.rand()
+        e = (0.1+0.4*np.random.rand())
         self.forward(e)
         # G_A and G_B
         self.set_requires_grad([self.netD_A, self.netD_B], False)
