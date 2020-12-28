@@ -159,12 +159,12 @@ class CycleGanmodel(BaseModel):
         # Backward cycle loss
         self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
         # combined loss
-        self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B
+        self.loss_G = 2*self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B
         self.loss_G.backward()
 
     def optimize_parameters(self):
         # forward
-        e = (-1 + 0.5*np.random.rand())
+        e = -1.0 + np.random.rand()
         self.forward(e)
         # G_A and G_B
         self.set_requires_grad([self.netD_A, self.netD_B], False)

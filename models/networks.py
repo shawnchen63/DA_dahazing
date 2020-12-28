@@ -467,7 +467,7 @@ class ResnetGenerator_exposure(nn.Module):
             if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor) and self.use_parallel:
                 
                 output = nn.parallel.data_parallel(self.first_model, input, self.gpu_ids)
-                output_E_x = nn.parallel.data_parallel(self.first_model, E_x, self.gpu_ids)
+                output_E_x = nn.parallel.data_parallel(self.e_model, E_x, self.gpu_ids)
                 output = torch.cat([output,output_E_x], dim=1)
                 output = nn.parallel.data_parallel(self.second_model, output, self.gpu_ids)
             else:
