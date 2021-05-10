@@ -240,7 +240,7 @@ def define_Gen(input_nc, output_nc, ngf=64, layers=4, norm='batch', activation='
     return init_net(net, init_type, gpu_ids)
 
 
-def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, gpu_ids=[], use_parallel = True, learn_residual = False):
+def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, gpu_ids=[], use_parallel = True, learn_residual = False, use_exposure=False):
     netG = None
     use_gpu = len(gpu_ids) > 0
     norm_layer = get_norm_layer(norm_type=norm)
@@ -249,7 +249,7 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
     if which_model_netG == 'resnet_9blocks':
         netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9, gpu_ids=gpu_ids, use_parallel=use_parallel, learn_residual = learn_residual)
     elif which_model_netG == 'resnet_9blocks_exposure':
-        netG = ResnetGenerator_exposure(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9, gpu_ids=gpu_ids, use_parallel=use_parallel, learn_residual = learn_residual)
+        netG = ResnetGenerator_exposure(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9, gpu_ids=gpu_ids, use_parallel=use_parallel, learn_residual = learn_residual, use_exposure=use_exposure)
     elif which_model_netG == 'resnet_9blocks_depth':
         netG = ResnetGenerator_depth(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9, gpu_ids=gpu_ids, use_parallel=use_parallel, learn_residual = learn_residual)
     elif which_model_netG == 'resnet_new':
@@ -387,7 +387,7 @@ class ResnetGenerator(nn.Module):
         return output
 
 class ResnetGenerator_exposure(nn.Module):
-    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, gpu_ids=[], use_parallel = True, learn_residual = False, padding_type='reflect'):
+    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, gpu_ids=[], use_parallel = True, learn_residual = False, padding_type='reflect', use_exposure=True):
         assert(n_blocks >= 0)
         super(ResnetGenerator_exposure, self).__init__()
         self.input_nc = input_nc
@@ -431,29 +431,43 @@ class ResnetGenerator_exposure(nn.Module):
         model = []
 
         mult = 2**n_downsampling
-        for i in range(n_blocks):
-            model += [ResnetBlock(ngf * mult* 2, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+        
+        if use_exposure:
+            for i in range(n_blocks):
+                model += [ResnetBlock(ngf * mult* 2, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+                
+            for i in range(n_downsampling):
+                mult = 2**(n_downsampling - i)
 
-        for i in range(n_downsampling):
-            mult = 2**(n_downsampling - i)
-            
-            if i ==0:
+                if i ==0:
 
-              model += [nn.ConvTranspose2d(ngf * mult*2, int(ngf * mult / 2),
-                                            kernel_size=3, stride=2,
-                                            padding=1, output_padding=1,
-                                            bias=use_bias),
-                        norm_layer(int(ngf * mult / 2)),
-                        nn.ReLU(True)]
+                  model += [nn.ConvTranspose2d(ngf * mult*2, int(ngf * mult / 2),
+                                                kernel_size=3, stride=2,
+                                                padding=1, output_padding=1,
+                                                bias=use_bias),
+                            norm_layer(int(ngf * mult / 2)),
+                            nn.ReLU(True)]
 
-            else:
+                else:
 
-              model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
-                                            kernel_size=3, stride=2,
-                                            padding=1, output_padding=1,
-                                            bias=use_bias),
-                        norm_layer(int(ngf * mult / 2)),
-                        nn.ReLU(True)]
+                  model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                                kernel_size=3, stride=2,
+                                                padding=1, output_padding=1,
+                                                bias=use_bias),
+                            norm_layer(int(ngf * mult / 2)),
+                            nn.ReLU(True)]
+        else:
+            for i in range(n_blocks):
+                model += [ResnetBlock(ngf * mult, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+
+            for i in range(n_downsampling):
+                mult = 2**(n_downsampling - i)
+                model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                             kernel_size=3, stride=2,
+                                             padding=1, output_padding=1,
+                                             bias=use_bias),
+                          norm_layer(int(ngf * mult / 2)),
+                          nn.ReLU(True)]
 
         model += [nn.ReflectionPad2d(3)]
         model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]

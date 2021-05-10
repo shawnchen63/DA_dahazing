@@ -35,14 +35,17 @@ avgPSNR_b = 0.0
 #avgSSIM_b = 0.0
 counter = 0
 
-exposure_list = [-1, -0.8, -0.6, -0.4, -0.2, 0.01]
-exposure_label = ['10', '08', '06', '04', '02', '00']
+exposure_list = [0.6]
+exposure_label = ['06p']
+#exposure_list = [0]
+#exposure_label = [0]
 
 for i, data in enumerate(tqdm(dataset, total=len(dataset))):
     #if i >= opt.how_many:
     #    break
     counter = i
     model.set_input(data)
+    
     for j, exposure in enumerate(exposure_list):
 
         model.test(exposure)

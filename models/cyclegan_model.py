@@ -28,6 +28,8 @@ class CycleGanmodel(BaseModel):
                                 help='selects model to use for netG_A')
         parser.add_argument('--which_model_netG_B', type=str, default='resnet_9blocks',
                                 help='selects model to use for netG_B')
+        parser.add_argument('--use_exposure', action='store_true',
+                                help='use_exposure')
         return parser
 
     def initialize(self, opt):
@@ -55,7 +57,7 @@ class CycleGanmodel(BaseModel):
         # Code (paper): G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
         use_parallel = False
         self.netG_A = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
-                                      opt.which_model_netG_A, opt.norm, not opt.no_dropout, self.gpu_ids, use_parallel, opt.learn_residual)
+                                      opt.which_model_netG_A, opt.norm, not opt.no_dropout, self.gpu_ids, use_parallel, opt.learn_residual, self.use_exposure)
         self.netG_B = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
                                       opt.which_model_netG_B, opt.norm, not opt.no_dropout, self.gpu_ids, use_parallel, opt.learn_residual)
         
@@ -151,7 +153,11 @@ class CycleGanmodel(BaseModel):
             self.loss_idt_B = torch.Tensor([0])
 
         # GAN loss D_A(G_A(A))
-        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_D * torch.mean(self.L_exp(self.fake_B, e)) + lambda_C * self.contentLoss.get_loss(self.fake_B, self.real_A)
+        if self.use_exposure:
+            self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_D * torch.mean(self.L_exp(self.fake_B, e)) + lambda_C * self.contentLoss.get_loss(self.fake_B, self.real_A)
+        else:
+            self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True) + lambda_C * self.contentLoss.get_loss(self.fake_B, self.real_A)
+            
         # GAN loss D_B(G_B(B))
         self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True) + lambda_C * self.contentLoss.get_loss(self.fake_A, self.real_B)
         # Forward cycle loss
@@ -164,7 +170,10 @@ class CycleGanmodel(BaseModel):
 
     def optimize_parameters(self):
         # forward
-        e = -1.0 + np.random.rand()
+        if self.use_exposure:
+            e = -1.0 + 1.6*np.random.rand()
+        else:
+            e = 0
         self.forward(e)
         # G_A and G_B
         self.set_requires_grad([self.netD_A, self.netD_B], False)
